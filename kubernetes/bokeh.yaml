@@ -1,0 +1,62 @@
+# Copyright Google Inc. 2017
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: bokeh
+spec:
+  replicas: 2
+  revisionHistoryLimit: 2
+  template:
+    metadata:
+      labels:
+        run: bokeh
+    spec:
+      containers:
+      - name: bokeh
+        image: gcr.io/cloud-solutions-images/dashboard-demo@sha256:fe2d0b9bc318ea45f7bef74f9ba5caba2b00221f4c386b525321f2c9d96e1ea9
+        ports:
+        - containerPort: 5006
+        env:
+        - name: GOOGLE_PROJECT_ID
+          valueFrom:
+            secretKeyRef:
+              name: project-id
+              key: project-id
+        - name: DASHBOARD_DEMO_DOMAIN
+          valueFrom:
+            secretKeyRef:
+              name: domain
+              key: domain
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          valueFrom:
+            secretKeyRef:
+              name: service-account-key
+              key: service-account-key
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: bokeh
+  name: bokeh
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 5006
+    nodePort: 30033  # Arbitrary port for easy future reference
+  selector:
+    run: bokeh
+  type: NodePort

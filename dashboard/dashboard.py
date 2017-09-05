@@ -30,6 +30,7 @@ logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
 modules = [modules.air.Module(), modules.temperature.Module(), modules.population.Module(), modules.precipitation.Module()]
 
 
+# [START fetch_data]
 def fetch_data(state):
     """
     Fetch data from BigQuery for the given US state by running
@@ -54,6 +55,7 @@ def fetch_data(state):
     t1 = time.time()
     timer.text = '(Execution time: %s seconds)' % round(t1 - t0, 4)
     return results
+# [END fetch_data]
 
 
 def update(attrname, old, new):

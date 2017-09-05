@@ -71,6 +71,7 @@ class Module(BaseModule):
             QUERY % {'state': state},
             cache_key=('air-%s' % NAMES_TO_CODES[state]))
 
+# [START make_plot]
     def make_plot(self, dataframe):
         self.source = ColumnDataSource(data=dataframe)
         palette = all_palettes['Set2'][6]
@@ -94,6 +95,7 @@ class Module(BaseModule):
 
         self.title = Paragraph(text=TITLE)
         return column(self.title, self.plot)
+# [START make_plot]
 
     def update_plot(self, dataframe):
         self.source.data.update(dataframe)

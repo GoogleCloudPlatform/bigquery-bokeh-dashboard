@@ -95,7 +95,7 @@ class Module(BaseModule):
 
         self.title = Paragraph(text=TITLE)
         return column(self.title, self.plot)
-# [START make_plot]
+# [END make_plot]
 
     def update_plot(self, dataframe):
         self.source.data.update(dataframe)

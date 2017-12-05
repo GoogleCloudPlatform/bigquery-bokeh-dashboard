@@ -37,7 +37,7 @@ echo "Uploading SSL certificates..."
 gcloud compute ssl-certificates create dashboard-demo-ssl-cert --certificate /tmp/dashboard-demo-ssl/ssl.crt --private-key /tmp/dashboard-demo-ssl/ssl.key
 
 echo "Creating HTTPS target proxy..."
-gcloud compute target-https-proxies create dashboard-demo-https-proxy --url-map dashboard-demo-urlmap --ssl-certificate dashboard-demo-ssl-cert
+gcloud compute target-https-proxies create dashboard-demo-https-proxy --url-map dashboard-demo-urlmap --ssl-certificates dashboard-demo-ssl-cert
 
 echo "Creating global forwarding rule..."
 gcloud compute forwarding-rules create dashboard-demo-gfr --address $STATIC_IP --global --target-https-proxy dashboard-demo-https-proxy --ports 443

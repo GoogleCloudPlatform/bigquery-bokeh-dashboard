@@ -64,7 +64,7 @@ class MemcachedDiscovery:
 
 
 def _run(query, dialect='legacy'):
-    return pd.io.gbq.read_gbq(
+    return pd.read_gbq(
         query,
         project_id=os.environ['GOOGLE_PROJECT_ID'],
         private_key=os.environ['GOOGLE_APPLICATION_CREDENTIALS'],

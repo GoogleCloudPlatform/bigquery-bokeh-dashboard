@@ -9,12 +9,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: memcached
 spec:
   replicas: 2
+  selector:
+    matchLabels:
+      run: memcached
   revisionHistoryLimit: 2
   template:
     metadata:

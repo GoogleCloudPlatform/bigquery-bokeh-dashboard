@@ -1,4 +1,4 @@
-# Copyright Google Inc. 2017
+# Copyright Google Inc. 2021
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -22,7 +22,7 @@ from states import NAMES_TO_CODES
 
 QUERY = """
     SELECT
-      A.zipcode,
+      A.zipcode as zipcode,
       population,
       city,
       state_code
@@ -33,8 +33,7 @@ QUERY = """
     ON
       A.zipcode = B.zipcode
     WHERE
-      gender = ''
-      AND state_code = '%(state)s'
+      state_code = '%(state)s'
     ORDER BY
       population DESC
     LIMIT
@@ -56,7 +55,7 @@ class Module(BaseModule):
         dataframe = run_query(
             QUERY % {'state': NAMES_TO_CODES[state]},
             cache_key=('population-%s' % NAMES_TO_CODES[state]),
-            dialect='standard')
+        )
         dataframe.index = np.arange(1, len(dataframe) + 1)
         return dataframe
 
@@ -66,7 +65,8 @@ class Module(BaseModule):
         self.data_table = DataTable(source=self.source, width=390, height=275, columns=[
             TableColumn(field="zipcode", title="Zipcodes", width=100),
             TableColumn(field="population", title="Population", width=100, formatter=NumberFormatter(format="0,0")),
-            TableColumn(field="city", title="City")
+            TableColumn(field="city", title="City"),
+            TableColumn(field="state_code", title="State")
         ])
         return column(self.title, self.data_table)
 

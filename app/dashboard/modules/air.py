@@ -1,4 +1,4 @@
-# Copyright Google Inc. 2017
+# Copyright Google Inc. 2021
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -28,26 +28,26 @@ QUERY = """
       pm25_nonfrm.avg AS pm25_nonfrm,
       lead.avg AS lead
     FROM
-      ( SELECT avg(arithmetic_mean) as avg, YEAR(date_local) as year
-        FROM [bigquery-public-data:epa_historical_air_quality.pm10_daily_summary]
+      ( SELECT avg(arithmetic_mean) as avg, EXTRACT(YEAR from date_local) as year
+        FROM `bigquery-public-data.epa_historical_air_quality.pm10_daily_summary`
         WHERE state_name = '%(state)s'
         GROUP BY year
       ) AS pm10
     JOIN
-      ( SELECT avg(arithmetic_mean) as avg, YEAR(date_local) as year
-        FROM [bigquery-public-data:epa_historical_air_quality.pm25_frm_daily_summary]
+      ( SELECT avg(arithmetic_mean) as avg, EXTRACT(YEAR from date_local) as year
+        FROM `bigquery-public-data.epa_historical_air_quality.pm25_frm_daily_summary`
         WHERE state_name = '%(state)s'
         GROUP BY year
       ) AS pm25_frm ON pm10.year = pm25_frm.year
     JOIN
-      ( SELECT avg(arithmetic_mean) as avg, YEAR(date_local) as year
-        FROM [bigquery-public-data:epa_historical_air_quality.pm25_nonfrm_daily_summary]
+      ( SELECT avg(arithmetic_mean) as avg, EXTRACT(YEAR from date_local) as year
+        FROM `bigquery-public-data.epa_historical_air_quality.pm25_nonfrm_daily_summary`
         WHERE state_name = '%(state)s'
         GROUP BY year
       ) AS pm25_nonfrm ON pm10.year = pm25_nonfrm.year
     JOIN
-      ( SELECT avg(arithmetic_mean) * 100 as avg, YEAR(date_local) as year
-        FROM [bigquery-public-data:epa_historical_air_quality.lead_daily_summary]
+      ( SELECT avg(arithmetic_mean) * 100 as avg, EXTRACT(YEAR from date_local) as year
+        FROM `bigquery-public-data.epa_historical_air_quality.lead_daily_summary`
         WHERE state_name = "%(state)s"
         GROUP BY year
       ) AS lead ON pm10.year = lead.year

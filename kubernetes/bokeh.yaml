@@ -1,4 +1,4 @@
-# Copyright Google Inc. 2017
+# Copyright Google Inc. 2021
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -26,25 +26,15 @@ spec:
     spec:
       containers:
       - name: bokeh
-        image: gcr.io/cloud-solutions-images/dashboard-demo@sha256:bbb8428a18e853b947254665340ba8387674c483e3d247e42ffd14f2f06f2ed0
+        image: us-central1-docker.pkg.dev/[PROJECT_ID]/dashboard-demo/dashboard-demo:latest
         ports:
         - containerPort: 5006
         env:
-        - name: GOOGLE_PROJECT_ID
-          valueFrom:
-            secretKeyRef:
-              name: project-id
-              key: project-id
         - name: DASHBOARD_DEMO_DOMAIN
           valueFrom:
             secretKeyRef:
               name: domain
               key: domain
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          valueFrom:
-            secretKeyRef:
-              name: service-account-key
-              key: service-account-key
 
 ---
 

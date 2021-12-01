@@ -1,4 +1,4 @@
-# Copyright Google Inc. 2017
+# Copyright Google Inc. 2021
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -10,11 +10,11 @@
 # limitations under the License.
 
 
-import os
 import socket
 from datetime import datetime
 
 import pandas as pd
+from google.cloud import bigquery
 from pymemcache.client.hash import HashClient
 
 
@@ -63,25 +63,19 @@ class MemcachedDiscovery:
         return self._client
 
 
-def _run(query, dialect='legacy'):
-    return pd.read_gbq(
-        query,
-        project_id=os.environ['GOOGLE_PROJECT_ID'],
-        private_key=os.environ['GOOGLE_APPLICATION_CREDENTIALS'],
-        dialect=dialect
-    )
+bigquery_client = bigquery.Client()
 
 
-def run_query(query, cache_key, expire=3600, dialect='legacy'):
+def run_query(query, cache_key, expire=3600):
     memcached_client = memcached_discovery.get_client()
     if memcached_client is None:
-        return _run(query, dialect=dialect)
+        return bigquery_client.query(query).to_dataframe()
     else:
         json = memcached_client.get(cache_key)
         if json is not None:
             df = pd.read_json(json, orient='records')
         else:
-            df = _run(query, dialect=dialect)
+            df = bigquery_client.query(query).to_dataframe()
             memcached_client.set(cache_key, df.to_json(orient='records'), expire=expire)
         return df
 

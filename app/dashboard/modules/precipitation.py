@@ -1,4 +1,4 @@
-# Copyright Google Inc. 2017
+# Copyright Google Inc. 2021
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,45 +11,43 @@
 
 
 import pandas as pd
-from bokeh.models import ColumnDataSource, HoverTool, DataRange1d, Paragraph
-from bokeh.layouts import column
-from bokeh.palettes import Blues4
+
+from bokeh.models import ColumnDataSource, HoverTool, Paragraph, DataRange1d
 from bokeh.plotting import figure
+from bokeh.layouts import column
 
 from modules.base import BaseModule
-from states import NAMES_TO_CODES
 from utils import run_query
+from states import NAMES_TO_CODES
 
 
 QUERY = """
     SELECT
-      year,
-      mo as month,
-      da as day,
-      MAX(max) as max_temp,
-      MIN(min) as min_temp,
-      AVG(temp) as avg_temp,
-      state
-    FROM
-      [bigquery-public-data:noaa_gsod.gsod%(year)s] a
-    JOIN
-      [bigquery-public-data:noaa_gsod.stations] b
-    ON
-      a.stn=b.usaf
-      AND a.wban=b.wban
-    WHERE
-      state IS NOT NULL
-      AND max < 1000
-      AND country = 'US'
-      AND state = '%(state)s'
+      EXTRACT(YEAR from date) as year,
+      EXTRACT(MONTH from date) as month,
+      EXTRACT(DAY from date) as day,
+      AVG(prcp) AS prcp
+    FROM (
+      SELECT
+        date,
+        IF (element = 'PRCP', value/10, NULL) AS prcp
+      FROM
+        `bigquery-public-data.ghcn_d.ghcnd_%(year)s` AS weather
+      JOIN
+        `bigquery-public-data.ghcn_d.ghcnd_stations` as stations
+      ON
+        weather.id = stations.id
+      WHERE
+        stations.state = '%(state)s'
+    )
     GROUP BY
-      year, month, day, state
+      year, month, day
     ORDER BY
-      year, month, day, state
+      year, month, day
 """
 
 YEAR = 2016
-TITLE = "Temperatures (F) in %s:" % YEAR
+TITLE = 'Precipitation (mm) in %s:' % YEAR
 
 
 class Module(BaseModule):
@@ -61,31 +59,25 @@ class Module(BaseModule):
         self.title = None
 
     def fetch_data(self, state):
-        query = QUERY % {'state': NAMES_TO_CODES[state], 'year': YEAR}
-        dataframe = run_query(query, cache_key='temperature-%s' % NAMES_TO_CODES[state])
+        dataframe = run_query(
+            QUERY % {'state': NAMES_TO_CODES[state], 'year': YEAR},
+            cache_key=('precipitation-%s' % NAMES_TO_CODES[state]))
         dataframe['date'] = pd.to_datetime(dataframe[['year', 'month', 'day']])
         dataframe['date_readable'] = dataframe['date'].apply(lambda x: x.strftime("%Y-%m-%d"))
-        dataframe['left'] = dataframe.date - pd.DateOffset(days=0.5)
-        dataframe['right'] = dataframe.date + pd.DateOffset(days=0.5)
-        dataframe = dataframe.set_index(['date'])
-        dataframe.sort_index(inplace=True)
         return dataframe
 
     def make_plot(self, dataframe):
         self.source = ColumnDataSource(data=dataframe)
         self.plot = figure(
-            x_axis_type="datetime", plot_width=600, plot_height=300,
+            x_axis_type="datetime", plot_width=400, plot_height=300,
             tools='', toolbar_location=None)
-        self.plot.quad(
-            top='max_temp', bottom='min_temp', left='left', right='right',
-            color=Blues4[2], source=self.source, legend='Magnitude')
-        line = self.plot.line(
-            x='date', y='avg_temp', line_width=3, color=Blues4[1],
-            source=self.source, legend='Average')
+
+        vbar = self.plot.vbar(
+            x='date', top='prcp', width=1, color='#fdae61', source=self.source)
         hover_tool = HoverTool(tooltips=[
             ('Value', '$y'),
             ('Date', '@date_readable'),
-        ], renderers=[line])
+        ], renderers=[vbar])
         self.plot.tools.append(hover_tool)
 
         self.plot.xaxis.axis_label = None

@@ -4,5 +4,5 @@ Please refer to the related article for all the steps to follow in this tutorial
 
 Contents of this repository:
 
-* `dashboard`: Python code to generate the dashboard using the Bokeh library. This folder also contains a `Dockerfile` in case you wish to build the container.
+* `app`: Python code to generate the dashboard using the Bokeh library. This folder also contains a `Dockerfile` in case you wish to build the container.
 * `kubernetes`: Configuration files to deploy the application using [Kubernetes](https://kubernetes.io/).
